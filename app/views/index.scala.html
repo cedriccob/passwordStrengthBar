@@ -1,0 +1,56 @@
+@(fakeForm: Form[_])
+
+@import helper._
+@implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.render) }
+
+@main("Welcome to Play") {
+<h3>
+    Password strength progessbar demo
+</h3>
+<br/>
+<div id="signup" class="row">
+    <form>
+        <div class="col-md-6">
+            @input(
+            fakeForm("password"),
+            '_label -> Messages("Password"),
+            'class -> "form-control") { (id, name, value, args) =>
+            <input type="password" name="@name" id="@id" @toHtmlArgs(args)>
+            <div class="progress" style="height: 5px; margin-bottom: 0px;">
+                <div class="progress-bar" id="pwdStrengthProgress" style="width: 0%;"></div>
+            </div>
+            <span class="label" id="pwdStrengthLabel" style="position: relative;float: right;"></span>
+            }
+        </div>
+    </form>
+
+
+</div>
+<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<script type="text/javascript" src="/assets/js/zxcvbn-async.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#password').keyup(function (event) {
+            var password = $('#password').val();
+            var result = zxcvbn(password);
+            $('#entropy').html(result.entropy);
+
+            // label based on score (0,1=weak; 2=ok; 3 =good; 4=great)
+            var $label = $('#pwdStrengthLabel');
+            if (password.length === 0) {
+                $label.hide();
+            } else {
+                $label.show();
+            }
+            $label.html(result.entropy < 33 ? "weak" : result.entropy < 66 ? "fair" : result.entropy < 80 ? "good" : "great");
+            $label.removeClass("label-danger label-warning label-success").addClass(result.entropy < 33 ? "label-danger" : result.entropy < 66 ? "label-warning" : "label-success");
+
+            // progress bar based on entropy (tops out at 100)
+            var $progress = $('#pwdStrengthProgress');
+            $progress.css('width', result.entropy + '%');
+            $progress.removeClass("progress-bar-danger progress-bar-warning progress-bar-success").addClass(result.entropy < 33 ? "progress-bar-danger" : result.entropy < 66 ? "progress-bar-warning" : "progress-bar-success");
+        });
+    });
+</script>
+}
